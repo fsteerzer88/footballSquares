@@ -1,0 +1,187 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum League {
+  NFL
+  NCAA
+}
+
+enum BoardMode {
+  SINGLE_GAME
+  SEASON
+}
+
+enum BoardStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  FINAL
+}
+
+enum BoardVisibility {
+  PUBLIC
+  CODE_PROTECTED
+}
+
+enum PurchaseStatus {
+  RESERVED
+  PAID
+  CANCELED
+  REFUNDED
+}
+
+enum GameStatus {
+  SCHEDULED
+  LIVE
+  FINAL
+}
+
+model User {
+  id           String     @id @default(cuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  boards       Board[]    @relation("HostBoards")
+  purchases    Purchase[]
+  squares      Square[]
+}
+
+model Team {
+  id         String   @id @default(cuid())
+  league     League
+  name       String
+  shortName  String
+  logoUrl    String?
+  externalId String?  @unique
+  gamesHome  Game[]   @relation("HomeTeam")
+  gamesAway  Game[]   @relation("AwayTeam")
+  boards     Board[]
+}
+
+model Game {
+  id             String        @id @default(cuid())
+  league         League
+  season         Int
+  week           Int
+  kickoffAt      DateTime
+  status         GameStatus    @default(SCHEDULED)
+  externalId     String?       @unique
+  homeTeamId     String
+  awayTeamId     String
+  homeTeam       Team          @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam       Team          @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  homeScoreQ1    Int?
+  awayScoreQ1    Int?
+  homeScoreQ2    Int?
+  awayScoreQ2    Int?
+  homeScoreQ3    Int?
+  awayScoreQ3    Int?
+  homeScoreFinal Int?
+  awayScoreFinal Int?
+  boards         BoardGame[]
+  digitSets      BoardDigitSet[]
+  payouts        PayoutResult[]
+}
+
+model Board {
+  id                    String          @id @default(cuid())
+  hostId                String
+  host                  User            @relation("HostBoards", fields: [hostId], references: [id])
+  teamId                String
+  team                  Team            @relation(fields: [teamId], references: [id])
+  title                 String
+  fundraiserName        String
+  complianceAcceptedAt  DateTime?
+  league                League
+  mode                  BoardMode
+  status                BoardStatus     @default(DRAFT)
+  visibility            BoardVisibility @default(PUBLIC)
+  accessCodeHash        String?
+  pricePerSquareCents   Int
+  maxSquaresPerBuyer    Int?
+  payoutQ1Cents         Int
+  payoutQ2Cents         Int
+  payoutQ3Cents         Int
+  payoutFinalCents      Int
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  games                 BoardGame[]
+  squares               Square[]
+  purchases             Purchase[]
+  digitSets             BoardDigitSet[]
+  payoutResults         PayoutResult[]
+}
+
+model BoardGame {
+  boardId String
+  gameId  String
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  game    Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@id([boardId, gameId])
+}
+
+model Square {
+  id         String    @id @default(cuid())
+  boardId    String
+  board      Board     @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  row        Int
+  column     Int
+  ownerId    String?
+  owner      User?     @relation(fields: [ownerId], references: [id])
+  reservedName String?
+  purchaseId String?
+  purchase   Purchase? @relation(fields: [purchaseId], references: [id])
+  createdAt  DateTime  @default(now())
+
+  @@unique([boardId, row, column])
+}
+
+model Purchase {
+  id              String         @id @default(cuid())
+  boardId         String
+  board           Board          @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  buyerId         String
+  buyer           User           @relation(fields: [buyerId], references: [id])
+  status          PurchaseStatus @default(RESERVED)
+  amountDueCents  Int
+  reservedName     String?
+  paymentNote     String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  squares         Square[]
+}
+
+model BoardDigitSet {
+  id           String   @id @default(cuid())
+  boardId      String
+  gameId       String?
+  board        Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  game         Game?    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  homeDigits   Int[]
+  awayDigits   Int[]
+  randomizedAt DateTime @default(now())
+
+  @@unique([boardId, gameId])
+}
+
+model PayoutResult {
+  id               String  @id @default(cuid())
+  boardId          String
+  gameId           String
+  quarter          String
+  winningSquareId  String?
+  payoutCents      Int
+  homeScore        Int
+  awayScore        Int
+  board            Board   @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  game             Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+}
