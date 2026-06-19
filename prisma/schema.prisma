@@ -93,6 +93,7 @@ model Game {
 
 model Board {
   id                    String          @id @default(cuid())
+  boardNumber           String          @unique
   hostId                String
   host                  User            @relation("HostBoards", fields: [hostId], references: [id])
   teamId                String
@@ -104,6 +105,7 @@ model Board {
   mode                  BoardMode
   status                BoardStatus     @default(DRAFT)
   visibility            BoardVisibility @default(PUBLIC)
+  accessCodeLookup      String?         @unique
   accessCodeHash        String?
   pricePerSquareCents   Int
   maxSquaresPerBuyer    Int?
@@ -111,6 +113,7 @@ model Board {
   payoutQ2Cents         Int
   payoutQ3Cents         Int
   payoutFinalCents      Int
+  archivedAt            DateTime?
   createdAt             DateTime        @default(now())
   updatedAt             DateTime        @updatedAt
   games                 BoardGame[]

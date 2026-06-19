@@ -2,11 +2,13 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { hashPassword } from "@/lib/auth";
 import { buildEmptySquares } from "@/lib/board-rules";
+import { generateBoardNumber } from "@/lib/board-number";
 import { prisma } from "@/lib/db";
 import { dollarsToCents } from "@/lib/format";
 import { getCurrentUser } from "@/lib/session";
 import { getSportsProvider } from "@/lib/sports-provider";
 import { getCachedTeams } from "@/lib/team-cache";
+import { normalizeBoardCode } from "@/lib/board-access";
 
 const schema = z.object({
   title: z.string().min(3),
@@ -63,6 +65,7 @@ export async function POST(request: Request) {
   }
 
   const accessCodeHash = data.accessCode ? await hashPassword(data.accessCode) : undefined;
+  const accessCodeLookup = data.accessCode ? normalizeBoardCode(data.accessCode) : undefined;
 
   const board = await prisma.$transaction(async (tx) => {
     await tx.team.upsert({
@@ -149,6 +152,7 @@ export async function POST(request: Request) {
 
     const createdBoard = await tx.board.create({
       data: {
+        boardNumber: await generateBoardNumber(tx),
         hostId: user.id,
         teamId: dbTeam.id,
         title: data.title,
@@ -158,6 +162,7 @@ export async function POST(request: Request) {
         mode: data.mode,
         status: "OPEN",
         visibility: data.visibility,
+        accessCodeLookup,
         accessCodeHash,
         pricePerSquareCents: dollarsToCents(data.pricePerSquare),
         maxSquaresPerBuyer: data.maxSquaresPerBuyer,
@@ -185,6 +190,7 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     id: board.id,
+    boardNumber: board.boardNumber,
     title: board.title,
     status: board.status
   });

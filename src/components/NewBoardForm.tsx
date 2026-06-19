@@ -5,6 +5,7 @@ import type { BoardMode, BoardVisibility, Game, League, Team } from "@/lib/types
 
 type CreatedBoard = {
   id: string;
+  boardNumber: string;
   title: string;
 };
 
@@ -94,7 +95,7 @@ export function NewBoardForm() {
         </div>
         {visibility === "CODE_PROTECTED" ? (
           <div className="field">
-            <label htmlFor="accessCode">Board access code</label>
+            <label htmlFor="accessCode">Pool password</label>
             <input
               id="accessCode"
               name="accessCode"
@@ -195,7 +196,7 @@ export function NewBoardForm() {
               onClick={() => setVisibility("CODE_PROTECTED")}
               type="button"
             >
-              Code
+            Private
             </button>
           </div>
         </div>
@@ -231,7 +232,11 @@ export function NewBoardForm() {
           </span>
         </label>
         {error ? <p>{error}</p> : null}
-        {created ? <p>Created {created.title}. It now appears in your dashboard.</p> : null}
+        {created ? (
+          <p>
+            Created {created.title}. Board #{created.boardNumber} now appears in your dashboard.
+          </p>
+        ) : null}
         <button className="button" type="submit">
           Create board
         </button>

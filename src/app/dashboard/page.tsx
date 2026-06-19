@@ -14,7 +14,7 @@ export default async function DashboardPage() {
   }
 
   const boards = await prisma.board.findMany({
-    where: { hostId: user.id },
+    where: { hostId: user.id, archivedAt: null },
     include: {
       team: true,
       squares: {
@@ -30,12 +30,15 @@ export default async function DashboardPage() {
 
     return {
       id: board.id,
+      boardNumber: board.boardNumber,
       title: board.title,
       fundraiserName: board.fundraiserName,
       league: board.league,
       mode: board.mode,
+      visibility: board.visibility,
       status: board.status,
       teamName: board.team.name,
+      accessCode: board.accessCodeLookup ?? undefined,
       pricePerSquareCents: board.pricePerSquareCents,
       soldSquares
     };

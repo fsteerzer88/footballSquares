@@ -35,12 +35,14 @@ const texas = { id: "ncaa-tex", league: "NCAA" as const, name: "Texas Longhorns"
 export const demoBoards: DemoBoard[] = [
   {
     id: "board-kc-youth",
+    boardNumber: "100001",
     title: "12U Baseball Chiefs Squares",
     fundraiserName: "Northside 12U Baseball",
     league: "NFL",
     mode: "SINGLE_GAME",
     visibility: "PUBLIC",
     isHost: false,
+    hostName: "Northside Booster Club",
     status: "OPEN",
     teamName: "Kansas City Chiefs",
     pricePerSquareCents: 2000,
@@ -48,6 +50,22 @@ export const demoBoards: DemoBoard[] = [
     soldSquares: 63,
     payouts: { q1: 15000, q2: 25000, q3: 15000, final: 35000 },
     paymentSummary: { receivedCents: 0, owedCents: 126000 },
+    reservations: [
+      {
+        id: "demo-reservation-1",
+        name: "Jamie L.",
+        amountDueCents: 2000,
+        status: "PAID",
+        squares: [{ row: 0, column: 0 }]
+      },
+      {
+        id: "demo-reservation-2",
+        name: "Morgan R.",
+        amountDueCents: 2000,
+        status: "RESERVED",
+        squares: [{ row: 0, column: 1 }]
+      }
+    ],
     ownedSquares: [
       { row: 0, column: 0, ownerName: "Jamie L.", paymentStatus: "PAID" },
       { row: 0, column: 1, ownerName: "Morgan R.", paymentStatus: "RESERVED" },
@@ -69,16 +87,30 @@ export const demoBoards: DemoBoard[] = [
       status: "SCHEDULED",
       homeTeam: chiefs,
       awayTeam: eagles
-    }
+    },
+    selectedGameId: "demo-kc-phi",
+    gameSnapshots: [
+      {
+        gameId: "demo-kc-phi",
+        week: 3,
+        kickoffAt: "2026-09-20T20:25:00.000Z",
+        matchup: "PHI at KC",
+        hasLockedDigits: false,
+        isFinal: false
+      }
+    ],
+    winners: []
   },
   {
     id: "board-uga-season",
+    boardNumber: "100002",
     title: "Bulldogs Season Booster Board",
     fundraiserName: "West County Soccer Club",
     league: "NCAA",
     mode: "SEASON",
     visibility: "CODE_PROTECTED",
     isHost: false,
+    hostName: "West County Soccer Club",
     status: "OPEN",
     teamName: "Georgia Bulldogs",
     pricePerSquareCents: 10000,
@@ -86,6 +118,22 @@ export const demoBoards: DemoBoard[] = [
     soldSquares: 48,
     payouts: { q1: 5000, q2: 10000, q3: 5000, final: 20000 },
     paymentSummary: { receivedCents: 10000, owedCents: 470000 },
+    reservations: [
+      {
+        id: "demo-season-reservation-1",
+        name: "Jamie L.",
+        amountDueCents: 10000,
+        status: "PAID",
+        squares: [{ row: 0, column: 0 }]
+      },
+      {
+        id: "demo-season-reservation-2",
+        name: "Morgan R.",
+        amountDueCents: 10000,
+        status: "RESERVED",
+        squares: [{ row: 0, column: 1 }]
+      }
+    ],
     ownedSquares: [
       { row: 0, column: 0, ownerName: "Jamie L.", paymentStatus: "PAID" },
       { row: 0, column: 1, ownerName: "Morgan R.", paymentStatus: "RESERVED" }
@@ -100,6 +148,18 @@ export const demoBoards: DemoBoard[] = [
       homeTeam: georgia,
       awayTeam: texas
     },
-    digits: createDigitSet(() => 0.42)
+    selectedGameId: "demo-uga-tex",
+    gameSnapshots: [
+      {
+        gameId: "demo-uga-tex",
+        week: 1,
+        kickoffAt: "2026-09-05T19:30:00.000Z",
+        matchup: "TEX at UGA",
+        hasLockedDigits: true,
+        isFinal: false
+      }
+    ],
+    digits: createDigitSet(() => 0.42),
+    winners: []
   }
 ];

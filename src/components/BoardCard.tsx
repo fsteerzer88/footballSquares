@@ -18,8 +18,19 @@ export function BoardCard({ board }: { board: BoardCardData }) {
         {board.teamName} board with {board.soldSquares}/100 squares claimed at{" "}
         {formatMoney(board.pricePerSquareCents)} each.
       </p>
+      <p className="helper-text">Board #{board.boardNumber}</p>
+      {board.visibility === "CODE_PROTECTED" ? (
+        <div className="access-code-box access-code-box-compact">
+          <span className="label">Pool password</span>
+          {board.accessCode ? (
+            <strong>{board.accessCode}</strong>
+          ) : (
+            <p className="helper-text">No display code saved. Open the board to set a new code.</p>
+          )}
+        </div>
+      ) : null}
       <div className="actions">
-        <Link className="button small" href={`/boards/${board.id}`}>
+        <Link className="button small" href={`/boards/${board.boardNumber}`}>
           View board
         </Link>
       </div>

@@ -4,15 +4,11 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 
 const schema = z.object({
-  row: z.number().int().min(0).max(9),
-  column: z.number().int().min(0).max(9),
+  purchaseId: z.string().min(1),
   status: z.enum(["RESERVED", "PAID"])
 });
 
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
 
   if (!user) {
@@ -23,12 +19,15 @@ export async function POST(
   const result = schema.safeParse(await request.json());
 
   if (!result.success) {
-    return NextResponse.json({ error: "Choose a valid square and payment status." }, { status: 400 });
+    return NextResponse.json({ error: "Choose a valid purchase and payment status." }, { status: 400 });
   }
 
   const board = await prisma.board.findUnique({
     where: { id },
-    select: { hostId: true, status: true }
+    select: {
+      hostId: true,
+      status: true
+    }
   });
 
   if (!board) {
@@ -43,25 +42,22 @@ export async function POST(
     return NextResponse.json({ error: "This board is locked and cannot be changed." }, { status: 409 });
   }
 
-  const square = await prisma.square.findUnique({
+  const purchase = await prisma.purchase.findFirst({
     where: {
-      boardId_row_column: {
-        boardId: id,
-        row: result.data.row,
-        column: result.data.column
-      }
+      id: result.data.purchaseId,
+      boardId: id
     },
     select: {
-      purchaseId: true
+      id: true
     }
   });
 
-  if (!square?.purchaseId) {
-    return NextResponse.json({ error: "That square is not reserved." }, { status: 409 });
+  if (!purchase) {
+    return NextResponse.json({ error: "Purchase not found." }, { status: 404 });
   }
 
   await prisma.purchase.update({
-    where: { id: square.purchaseId },
+    where: { id: purchase.id },
     data: { status: result.data.status }
   });
 

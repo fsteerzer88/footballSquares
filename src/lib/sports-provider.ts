@@ -1,4 +1,5 @@
 import type { Game, League, Team } from "./types";
+import { withNormalizedShortName } from "./team-abbreviations";
 import { withTeamLogo } from "./team-assets";
 
 export interface SportsProvider {
@@ -370,13 +371,13 @@ class ApiSportsProvider implements SportsProvider {
   }
 
   private mapTeam(team: ApiSportsTeam, league: League): Team {
-    return {
+    return withNormalizedShortName({
       id: `api-sports-${this.leaguePrefix(league)}-${team.id}`,
       league,
       name: team.name,
       shortName: team.code || team.name.split(" ").map((part) => part[0]).join("").slice(0, 4),
       logoUrl: team.logo ?? undefined
-    };
+    });
   }
 
   private mapGame(game: ApiSportsGame, league: League, requestedSeason: number): Game {
@@ -391,20 +392,20 @@ class ApiSportsProvider implements SportsProvider {
       week: this.weekNumber(game.game.week),
       kickoffAt,
       status: game.game.status.short === "FT" ? "FINAL" : game.game.status.short === "NS" ? "SCHEDULED" : "LIVE",
-      homeTeam: {
+      homeTeam: withNormalizedShortName({
         id: `api-sports-${this.leaguePrefix(league)}-${game.teams.home.id}`,
         league,
         name: game.teams.home.name,
         shortName: this.shortName(game.teams.home.name),
         logoUrl: game.teams.home.logo ?? undefined
-      },
-      awayTeam: {
+      }),
+      awayTeam: withNormalizedShortName({
         id: `api-sports-${this.leaguePrefix(league)}-${game.teams.away.id}`,
         league,
         name: game.teams.away.name,
         shortName: this.shortName(game.teams.away.name),
         logoUrl: game.teams.away.logo ?? undefined
-      },
+      }),
       scores: game.scores
         ? {
             q1: this.scorePair(game.scores.home?.quarter_1, game.scores.away?.quarter_1),

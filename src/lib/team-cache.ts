@@ -1,5 +1,6 @@
 import { prisma } from "./db";
 import { getSportsProvider } from "./sports-provider";
+import { withNormalizedShortName } from "./team-abbreviations";
 import type { League, Team } from "./types";
 
 function sourcePrefix(league: League) {
@@ -18,13 +19,13 @@ function dbTeamToTeam(team: {
   shortName: string;
   logoUrl: string | null;
 }): Team {
-  return {
+  return withNormalizedShortName({
     id: team.externalId ?? team.id,
     league: team.league,
     name: team.name,
     shortName: team.shortName,
     logoUrl: team.logoUrl ?? undefined
-  };
+  });
 }
 
 export async function getCachedTeams(league: League): Promise<Team[]> {
@@ -44,7 +45,7 @@ export async function getCachedTeams(league: League): Promise<Team[]> {
   }
 
   const provider = getSportsProvider();
-  const providerTeams = await provider.getTeams(league);
+  const providerTeams = (await provider.getTeams(league)).map(withNormalizedShortName);
 
   await prisma.$transaction(
     providerTeams.map((team) =>

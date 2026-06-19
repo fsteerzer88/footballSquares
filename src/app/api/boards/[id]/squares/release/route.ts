@@ -27,7 +27,7 @@ export async function POST(
 
   const board = await prisma.board.findUnique({
     where: { id },
-    select: { hostId: true }
+    select: { hostId: true, status: true }
   });
 
   if (!board) {
@@ -36,6 +36,10 @@ export async function POST(
 
   if (board.hostId !== user.id) {
     return NextResponse.json({ error: "Only the board host can remove reserved squares." }, { status: 403 });
+  }
+
+  if (board.status !== "OPEN") {
+    return NextResponse.json({ error: "This board is locked and cannot be changed." }, { status: 409 });
   }
 
   const square = await prisma.square.findUnique({
